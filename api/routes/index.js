@@ -4,6 +4,8 @@ const express = require('express');
 const keythereum = require('keythereum');
 const Web3 = require('web3');
 const fs = require('fs')
+const cryptoJs = require("crypto-js");
+
 
 const router = express.Router();
 const web3 = new Web3("ws://localhost:8546");
@@ -16,11 +18,25 @@ const { signTX } = require('../data/signTx.js');
 
 //"0x56528ec7f5cd0ca1a845d6a0c7660203b15df6fb"
 
-let userKeyfile = require('../data/keyfile/mykey.json');
+let userKeyfile = require('../data/keyfile/myKey.json');
 
 // === api ===
 router.get('/', (req, res) => {
   res.send('EthDev_FinalProject');
+});
+
+// @dev 創建使用者帳戶。只有這邊要存DB紀錄 人 <=> address
+// @input account password 
+router.post("/creatAccount", async (req, res) => {
+    let account = req.body.account;
+    let passwordHash = cryptoJs.SHA256(req.body.password);
+    web3.eth.accounts.create().then(function(result){
+        // account , 加密過私鑰
+        let privateKeyHash = CryptoJs.AES.encrypt(JSON.stringify(result.privateKey), passwordHash).toString();
+        // address
+        let userAddress = result.address;
+    });
+
 });
 
 
@@ -62,12 +78,15 @@ router.get("/create" , async(req, res) => {
 
 });
 
+
 // @dev 由管理員新增使用者
 // @address userAddress
 router.post("/addUser", async (req, res) => {
     let contractAddress = fs.readFileSync('./api/data/address.txt').toString(); //這個是以 app.js 的位置出發
     let EvaluationContract = new web3.eth.Contract(EvaluationAbi, contractAddress);
     let privateKey = await keythereum.recover('ethDev', userKeyfile);
+
+
     let nonce = await web3.eth.getTransactionCount('0x' + userKeyfile.address);
     let userAddress = req.body.userAddress;
     let data = await EvaluationContract.methods.addUser(userAddress).encodeABI();
@@ -82,7 +101,7 @@ router.post("/addUser", async (req, res) => {
     };
 
     let rawTx = signTX(privateKey, transaction);
-    web3.eth.sendSignedTransaction(rawTx).on('receipt', console.log)
+    web3.eth.sendSignedTransaction(rawTx).on('receipt', console.log);
     .on("error", console.log);
 
     res.send(userAddress); //回傳資料代表成功
@@ -91,6 +110,21 @@ router.post("/addUser", async (req, res) => {
 
 router.post("/addNameClass", async (req, res) => {
     // TODO
+    // 判斷是管理員 還是 使用者 call 
+    let userAccount = req.body.userAccount;
+    // 由 account 抓回私鑰 與 userAddress
+    // google excel 抓回
+    // 私鑰 obj
+    // let privateKeyHash = google excel 抓回來的加密過後私鑰
+    // 地址
+    // let userAddress = google excel 抓回來的address
+
+    // 用 passwordHash 解密 
+    let passwordHash = cryptoJs.SHA256(req.body.password);
+    let bytes  = CryptoJs.AES.decrypt(privateKeyHash, passwordHash);
+    let privateKey = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    let nonce = await web3.eth.getTransactionCount('0x' + userAddress);
+
 });
 
 router.post("/addNameClassValue", async (req, res) => {
