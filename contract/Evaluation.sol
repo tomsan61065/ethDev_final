@@ -10,10 +10,10 @@ contract Evaluation{
 
     struct comments{
         uint count; //計數器
-        
+    
         address[] person; //評論者
         string[] text; //內容
-        int[] upVote; //他人評價 -1 0 1
+        int[] upVote; //他人對此評價總分
         mapping (address => mapping(uint => int8)) used; //他人對此的評價
         //雙層 mapping 處理 [該使用者][某個評論] = -1(噓) 0(無評論) 1(推)
     }
@@ -43,7 +43,7 @@ contract Evaluation{
     
     //id 與對應的 老師課程
     mapping (uint256 => nameClass) private classes;
-    uint[] public nameClassIndex;
+    uint[] private nameClassIndex;
     
     mapping (uint256 => comments) private commentsArray;//某課程ID與它的評論們
 
@@ -146,7 +146,8 @@ contract Evaluation{
         if(temp.used[msg.sender][_commentNum] == _vote){ //同樣的評價
             return;
         }
-
+        
+        // 有 vote 不是 1 0 -1 的漏洞
         if(temp.used[msg.sender][_commentNum] == 0){ //沒評價過
             temp.upVote[_commentNum] = temp.upVote[_commentNum].add(_vote); //注意，是 int -1, 0, 1
             temp.used[msg.sender][_commentNum] = _vote;
@@ -159,6 +160,11 @@ contract Evaluation{
     // 取回 評論資訊
     function getVoteData(uint classId, uint _commentNum) external view
         returns(address, string memory, int, uint){
+        
+        if(commentsArray[classId].count == 0 || _commentNum <= commentsArray[classId].count){ //確保不會 access 到陣列外
+            return (address(0),"null",0,commentsArray[classId].count);
+        }
+
         require(_commentNum < commentsArray[classId].count);
         return(
             commentsArray[classId].person[_commentNum],
@@ -193,6 +199,17 @@ contract Evaluation{
             c.mental,
             c.count
         );
+    }
+
+    // 取回總共有哪些資料
+    function getClassIndex(uint index) 
+    external 
+    view
+    returns(uint, uint){
+        if(nameClassIndex.length == 0 || nameClassIndex.length <= index){
+            return(nameClassIndex.length, 0);
+        }
+        return(nameClassIndex.length, nameClassIndex[index]);
     }
 
     
