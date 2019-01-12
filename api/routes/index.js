@@ -197,7 +197,12 @@ router.post("/addNameClass", async (req, res) => {
         }
         
         let bytes  = cryptoJs.AES.decrypt(privateKeyCrypto, password);
-        privateKey = await JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+        privateKey = bytes.toString(cryptoJs.enc.Utf8);
+    //    console.log(privateKey);
+        privateKey = privateKey.substring(3, privateKey.length - 1);
+    //    console.log(privateKey);
+        privateKey = new Buffer(privateKey, "hex");
+    //    console.log(privateKey);
     }
     
     let contractAddress = fs.readFileSync('./api/data/address.txt').toString();
@@ -216,10 +221,12 @@ router.post("/addNameClass", async (req, res) => {
 
     let rawTx = signTX(privateKey, transaction);
     web3.eth.sendSignedTransaction(rawTx)
-    .on('receipt', console.log)
-    .on("error", console.log);
-
-    res.send(userAddress); //回傳資料代表成功
+    .on('receipt', (receipt) => {
+        res.send(receipt.transactionHash); //回傳TX代表成功
+    })
+    .on("error", (error) => {
+        res.send("txFail");
+    });
 });
 
 router.post("/addNameClassValue", async (req, res) => {
@@ -266,7 +273,9 @@ router.post("/addNameClassValue", async (req, res) => {
         }
         
         let bytes  = cryptoJs.AES.decrypt(privateKeyCrypto, password);
-        privateKey = await JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+        privateKey = bytes.toString(cryptoJs.enc.Utf8);
+        privateKey = privateKey.substring(3, privateKey.length - 1);
+        privateKey = new Buffer(privateKey, "hex");
     }
     
     let contractAddress = fs.readFileSync('./api/data/address.txt').toString();
@@ -285,10 +294,12 @@ router.post("/addNameClassValue", async (req, res) => {
 
     let rawTx = signTX(privateKey, transaction);
     web3.eth.sendSignedTransaction(rawTx)
-    .on('receipt', console.log)
-    .on("error", console.log);
-
-    res.send(userAddress); //回傳資料代表成功
+    .on('receipt', (receipt) => {
+        res.send(receipt.transactionHash); //回傳TX代表成功
+    })
+    .on("error", (error) => {
+        res.send("txFail");
+    });
 });
 
 router.post("/addNameClassComment", async (req, res) => {
@@ -320,7 +331,9 @@ router.post("/addNameClassComment", async (req, res) => {
         }
         
         let bytes  = cryptoJs.AES.decrypt(privateKeyCrypto, password);
-        privateKey = await JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+        privateKey = bytes.toString(cryptoJs.enc.Utf8);
+        privateKey = privateKey.substring(3, privateKey.length - 1);
+        privateKey = new Buffer(privateKey, "hex");
     }
     
     let contractAddress = fs.readFileSync('./api/data/address.txt').toString();
@@ -339,10 +352,12 @@ router.post("/addNameClassComment", async (req, res) => {
 
     let rawTx = signTX(privateKey, transaction);
     web3.eth.sendSignedTransaction(rawTx)
-    .on('receipt', console.log)
-    .on("error", console.log);
-
-    res.send(userAddress); //回傳資料代表成功
+    .on('receipt', (receipt) => {
+        res.send(receipt.transactionHash); //回傳TX代表成功
+    })
+    .on("error", (error) => {
+        res.send("txFail");
+    });
 });
 
 router.post("/addVoteToComment", async (req, res) => {
@@ -375,8 +390,10 @@ router.post("/addVoteToComment", async (req, res) => {
             return;
         }
         
-        let bytes  = CryptoJs.AES.decrypt(privateKeyCrypto, password);
-        privateKey = await JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+        let bytes  = cryptoJs.AES.decrypt(privateKeyCrypto, password);
+        privateKey = bytes.toString(cryptoJs.enc.Utf8);
+        privateKey = privateKey.substring(3, privateKey.length - 1);
+        privateKey = new Buffer(privateKey, "hex");
     }
     
     let contractAddress = fs.readFileSync('./api/data/address.txt').toString();
@@ -395,10 +412,12 @@ router.post("/addVoteToComment", async (req, res) => {
 
     let rawTx = signTX(privateKey, transaction);
     web3.eth.sendSignedTransaction(rawTx)
-    .on('receipt', console.log)
-    .on("error", console.log);
-
-    res.send(userAddress); //回傳資料代表成功
+    .on('receipt', (receipt) => {
+        res.send(receipt.transactionHash); //回傳TX代表成功
+    })
+    .on("error", (error) => {
+        res.send("txFail");
+    });
 });
 
 // @dev 取回評論
