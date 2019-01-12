@@ -162,7 +162,7 @@ contract Evaluation{
         returns(address, string memory, int, uint){
         
         if(commentsArray[classId].count == 0 || _commentNum <= commentsArray[classId].count){ //確保不會 access 到陣列外
-            return (address(0),"null",0,commentsArray[classId].count);
+            return (address(0), "null", 0, commentsArray[classId].count);
         }
 
         require(_commentNum < commentsArray[classId].count);
@@ -176,9 +176,10 @@ contract Evaluation{
     
     // 取回 課堂資訊
     function getDataFromClassId(uint classId) external view 
-        returns(string memory, uint, uint, uint, uint, uint, uint, uint){
+        returns(string memory, string memory, uint, uint, uint, uint, uint, uint, uint){
         nameClass memory c = classes[classId]; //避免 stack too deep 問題
         return(
+            c.class,
             c.name,
             c.homework,
             c.hwLength,
