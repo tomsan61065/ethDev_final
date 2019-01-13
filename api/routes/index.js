@@ -52,24 +52,36 @@ router.post("/signUp", async(req, res) => {
             console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
             console.log('body:', body); // Print the HTML for the Google homepage.
             address = body;
+            
+            //addUser
+            request.post({url:'http://localhost:9999/addUser', form: {userAddress:address}}, function (error, response, body){
+                console.log('error:', error); // Print the error if one occurred
+                if(error){
+                    res.send("false");
+                    return;
+                }
+                console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+                console.log('body:', body); // Print the HTML for the Google homepage.
+            });
         });
 
     }else{
         // 將資料存到DB
         await addGSData(account, passwordHash, "userHold", address);
+
+        //addUser
+        request.post({url:'http://localhost:9999/addUser', form: {userAddress:address}}, function (error, response, body){
+            console.log('error:', error); // Print the error if one occurred
+            if(error){
+                res.send("false");
+                return;
+            }
+            console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+            console.log('body:', body); // Print the HTML for the Google homepage.
+        });
     }
     
-    //addUser
-    request.post({url:'http://localhost:9999/addUser', form: {userAddress:address}}, function (error, response, body){
-        console.log('error:', error); // Print the error if one occurred
-        if(error){
-            res.send("false");
-            return;
-        }
-        console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-        console.log('body:', body); // Print the HTML for the Google homepage.
-    });
-    console.log("true");
+    console.log("signUp:true");
     res.send("true"); 
 });
 
@@ -172,7 +184,7 @@ router.post("/addNameClass", async (req, res) => {
     let account = req.body.account; 
     let password = req.body.password;
     let _name = req.body.name;
-    let _class = req.body.class;
+    let _class = req.body.className;
     let _classId = req.body.classId;
     let passwordHash = cryptoJs.SHA256(password).toString();
     
