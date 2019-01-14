@@ -13,6 +13,7 @@ const bodyParser = require('body-parser'); // 處裡收到的 req 的 body(不�
 const cors = require('cors'); //cross domain (允許非此domain的人可call API))
 
 const index = require('./api/routes/index');
+const nccuToken = require('./api/routes/token');
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use(cors());
 app.use(logger('dev')); //調用 morgan 的日誌功能
 
 app.use('/', index);
+app.use('/token', nccuToken);
 
 /**** error handlers ****/
 

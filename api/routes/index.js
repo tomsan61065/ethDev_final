@@ -107,39 +107,59 @@ router.post("/creatAccount", async (req, res) => {
 
 // @dev 藉由 api 將 Evaluation contract 部屬上鏈
 router.get("/create" , async(req, res) => {
-    let privateKey = await keythereum.recover('ethDev', userKeyfile);
-    let nonce = await web3.eth.getTransactionCount('0x' + userKeyfile.address);
-    
-    let myContract = new web3.eth.Contract(
-        EvaluationAbi,
-    //    { gas: 4700000, gasPrice: 0 },
-    );
-    let data = await myContract
-    .deploy({
-        data: EvaluationBin, 
-        // arguments: [arg1], // constructor 需要參數的話
-    }).encodeABI();
 
-    let transaction = {
-        data,
-        nonce,
-        gas: 4500000,
-        gasPrice: 0, 
-        value: '0x0',
-    };
+    //先部署nccuToken -> 會 return tokenAddress
+    request('http://localhost:9999/token/create', async function (error, response, body){
+        console.log('error:', error); // Print the error if one occurred
+        if(error){
+            res.send("false");
+            return;
+        }
+        console.log('statusCode:', response && response.statusCode);
+        console.log('tokenAddress:', body);
 
-    let rawTx = signTX(privateKey, transaction);
-    web3.eth.sendSignedTransaction(rawTx).on("receipt", (receipt) => {
-        // @dev output txt file to store contract address
-        fs.writeFileSync("./api/data/address.txt", receipt.contractAddress);
-        console.log(receipt.contractAddress);
-        
-        res.json({
-            test: "test",
-            address : receipt.contractAddress,
-        });
-    })
-    .on("error", console.log);
+        let privateKey = await keythereum.recover('ethDev', userKeyfile);
+        let nonce = await web3.eth.getTransactionCount('0x' + userKeyfile.address);
+
+        let myContract = new web3.eth.Contract(
+            EvaluationAbi,
+        //    { gas: 4700000, gasPrice: 0 },
+        );
+        let data = await myContract
+        .deploy({
+            data: EvaluationBin, 
+            arguments: [body], // constructor 需要參數的話
+        }).encodeABI();
+
+        let transaction = {
+            data,
+            nonce,
+            gas: 4500000,
+            gasPrice: 0, 
+            value: '0x0',
+        };
+
+        let rawTx = signTX(privateKey, transaction);
+        web3.eth.sendSignedTransaction(rawTx).on("receipt", (receipt) => {
+            // @dev output txt file to store contract address
+            fs.writeFileSync("./api/data/address.txt", receipt.contractAddress);
+            console.log(receipt.contractAddress);
+            
+            res.json({
+                test: "test",
+                address : receipt.contractAddress,
+            });
+
+            // 將 M 所有 token 轉給 contract
+            request('http://localhost:9999/token/transfer', function (error, response, body){
+            //    console.log('error:', error); 
+            //    console.log('statusCode:', response && response.statusCode);
+                console.log('transferTx:', body);
+            });
+
+        })
+        .on("error", console.log);
+    });
 
 });
 

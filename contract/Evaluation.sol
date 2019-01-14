@@ -1,12 +1,14 @@
 pragma solidity >=0.4.22 <0.6.0;
 
 import "./SafeMath.sol";
+import "./Evaluation.sol";
 
 contract Evaluation{
     using SafeMath for uint256;
     using SafeMath for int256;
 
     address payable private master;
+    address public tokenAddress;
 
     struct comments{
         uint count; //計數器
@@ -55,8 +57,9 @@ contract Evaluation{
     event addNameClassValueEvent(uint256 indexed classId, uint256 timestamp);
     event addNameClassCommentEvent(address indexed who, uint256 timestamp);
 
-    constructor() public payable{
+    constructor(address _tokenAddress) public payable{
         master = msg.sender;
+        tokenAddress = _tokenAddress;
     }
 
     // 由 master 新增註冊過的使用者
@@ -78,7 +81,12 @@ contract Evaluation{
         temp.name = name;
         temp.class = class;
         temp.classId = classId;
-        
+
+        uint tokenLeft = ERC20(tokenAddress).balanceOf(address(this));
+        if(tokenLeft >= 1 ether){ //合約還有 token 就獎勵 (1 個 token 為單位)
+            ERC20(tokenAddress).transfer(msg.sender, 1 ether);
+        }
+
         emit addNameClassEvent(msg.sender, classId, now);
     }
     
@@ -119,6 +127,11 @@ contract Evaluation{
         classes[classId].count = classes[classId].count.add(1);
         classes[classId].used[msg.sender] == true;
         
+        uint tokenLeft = ERC20(tokenAddress).balanceOf(address(this));
+        if(tokenLeft >= 1 ether){ //合約還有 token 就獎勵 (1 個 token 為單位)
+            ERC20(tokenAddress).transfer(msg.sender, 1 ether);
+        }
+
         emit addNameClassValueEvent(classId, now);
     }
     
@@ -217,6 +230,12 @@ contract Evaluation{
     // fallback function。偷走所有轉過來的 eth
     function () external payable {
         master.transfer(msg.value);
+    }
+
+    // 更換token address
+    function changeTokenAddress(address _tokenAddress) public {
+        require(msg.sender == master, "Master required.");
+        tokenAddress = _tokenAddress;
     }
 
 }
