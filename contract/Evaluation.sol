@@ -1,7 +1,7 @@
 pragma solidity >=0.4.22 <0.6.0;
 
 import "./SafeMath.sol";
-import "./Evaluation.sol";
+import "./NCCUToken.sol";
 
 contract Evaluation{
     using SafeMath for uint256;
@@ -174,7 +174,7 @@ contract Evaluation{
     function getVoteData(uint classId, uint _commentNum) external view
         returns(address, string memory, int, uint){
         
-        if(commentsArray[classId].count == 0 || _commentNum <= commentsArray[classId].count){ //確保不會 access 到陣列外
+        if(commentsArray[classId].count == 0 || _commentNum >= commentsArray[classId].count){ //確保不會 access 到陣列外
             return (address(0), "null", 0, commentsArray[classId].count);
         }
 
